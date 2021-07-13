@@ -9,7 +9,7 @@
 // CREATE MAP FUNCTION
 function createMap(earthquakes) {
 
-    console.log("Creating map");   // DEBUG
+    // console.log("Creating map");   // DEBUG
 
     // Tile layer (background map)
     var lightmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
@@ -41,9 +41,72 @@ function createMap(earthquakes) {
         collapsed: false
     }).addTo(myMap); // Add to map
 
-    console.log("Done!");   // DEBUG
+    // console.log("Done!");   // DEBUG
 
 }
 
 
+// CREATE MARKERS FUNCTION
+function createMarkers(response) {
+
+    // console.log("Creating markers");   // DEBUG
+
+    // Get Features from geoJSON response
+    var earthquakes = response.features;
+    console.log("Earthquake Count: ", response.metadata.count);   // DEBUG
+    // console.log("Response: ", earthquakes);   // DEBUG
+
+    // Define markers array
+    var earthquakeMarkers = [];
+    var magnitudeArr = [];   // DEBUG
+    var depthArr = [];   // DEBUG
+
+    // Get earthquake data
+    earthquakes.forEach((earthquake) => {
+        var place = earthquake.properties.place;
+        var magnitude = earthquake.properties.mag;
+        var location = [earthquake.geometry.coordinates[1], earthquake.geometry.coordinates[0]];
+        var depth = earthquake.geometry.coordinates[2];
+
+        // console.log("Place: ", place);   // DEBUG
+        // console.log("Magnitude: ", magnitude);   // DEBUG
+        // console.log("Location: ", location);   // DEBUG
+        // console.log("Depth: ", depth);   // DEBUG
+
+        // Build earthquake marker
+        var earthquakeMarker = L.circle(location, {
+            radius: magnitude * 30000,
+            stroke: true,
+            color: "black",
+            weight: 1,
+            fillColor: "yellow",
+            fillOpacity: 0.5
+        });
+
+        earthquakeMarkers.push(earthquakeMarker);
+        
+        // console.log("Marker: ", earthquakeMarker);   // DEBUG
+        magnitudeArr.push(magnitude);   // DEBUG
+        depthArr.push(depth);   // DEBUG
+
+    })
+
+    createMap(L.layerGroup(earthquakeMarkers));
+
+    // console.log("Markers: ", earthquakeMarkers);   // DEBUG
+    console.log("Earthquake Magnitude [min/max]: ", Math.min(...magnitudeArr), Math.max(...magnitudeArr));   // DEBUG
+    console.log("Earthquake Depth [min/max]: ", Math.min(...depthArr), Math.max(...depthArr));   // DEBUG
+    // console.log("Done!");   // DEBUG
+
+}
+
+
+// USGS GeoJSON Feed: "M4.5+ Earthquakes" - Past 30 Days (updated every minute)
+var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson";
+
+// USGS GeoJSON Feed: "All Earthquakes" - Past 7 Days (updated every minute)
+// var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+
+// Perform API call
+d3.json(usgsURL).then(createMarkers);
 

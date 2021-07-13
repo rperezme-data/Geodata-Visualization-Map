@@ -5,15 +5,16 @@
 //     [83.162102, -52.233040]  //Northeast
 // ];
 
+
 // CHOOSE COLOR FUNCTION (*Reference: https://leafletjs.com/examples/choropleth/)
 function getColor(d) {
-    return d > 90  ? '#FF1100' :
-           d > 70  ? '#FF4B00' :
-           d > 50  ? '#FF9500' :
-           d > 30  ? '#FFC000' :
-           d > 10  ? '#FFFF00' :
-           d > -10 ? '#00F000' :
-                     'blue';
+    return d > 90 ? '#FF1100' :
+        d > 70 ? '#FF4B00' :
+            d > 50 ? '#FF9500' :
+                d > 30 ? '#FFC000' :
+                    d > 10 ? '#FFFF00' :
+                        d > -10 ? '#00F000' :
+                            '#00FFFF';
 }
 
 
@@ -22,7 +23,24 @@ function createMap(earthquakes) {
 
     // console.log("Creating map");   // DEBUG
 
-    // Tile layer (background map)
+    // TILE LAYERS (background mapS) 
+    // Mapbox Satellite
+    var satelliteMap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+        attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+        maxZoom: 18,
+        id: "satellite-v9",
+        accessToken: API_KEY
+    });
+
+    // Mapbox Outdoors
+    var outdoorsMap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+        attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+        maxZoom: 18,
+        id: "outdoors-v11",
+        accessToken: API_KEY
+    });
+
+    // Mapbox Light
     var lightMap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
         attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
         maxZoom: 18,
@@ -30,14 +48,26 @@ function createMap(earthquakes) {
         accessToken: API_KEY
     });
 
+    // Mapbox Dark
+    var darkMap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+        attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+        maxZoom: 18,
+        id: "dark-v10",
+        accessToken: API_KEY
+    });
+
     // Tile layers holder (baseMaps object)
     var baseMaps = {
-        "Light": lightMap
+        "Satellite": satelliteMap,
+        "Outdoor": outdoorsMap,
+        "Light": lightMap,
+        "Dark": darkMap
     };
 
     // Additional layers holder (overlayMaps object)
     var overlayMaps = {
-        "Earthquakes": earthquakes
+        "Earthquakes": earthquakes,
+        // "Tectonic Plates": plates
     }
 
     // Build map & Set parameters (map object)
@@ -54,28 +84,29 @@ function createMap(earthquakes) {
 
     // console.log("Done!");   // DEBUG
 
+    // CREATE LEGEND FUNCTION (*Reference: https://leafletjs.com/examples/choropleth/)
+    // Pending: Improve code 
+    var legend = L.control({ position: 'bottomright' });
 
-// CREATE LEGEND FUNCTION (*Reference: https://leafletjs.com/examples/choropleth/)
-var legend = L.control({ position: 'bottomright' });
-    
-legend.onAdd = function (map) {
+    legend.onAdd = function (map) {
 
-    var div = L.DomUtil.create('div', 'info legend'),
-        grades = [-10, 10, 30, 50, 70, 90],
-        labels = [];
+        var div = L.DomUtil.create('div', 'info legend'),
+            grades = [-10, 10, 30, 50, 70, 90],
+            labels = [];
 
-    // loop through our density intervals and generate a label with a colored square for each interval
-    for (var i = 0; i < grades.length; i++) {
-        div.innerHTML +=
-            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-    }
+        // loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < grades.length; i++) {
+            div.innerHTML +=
+                '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+        }
 
-    return div;
-};
+        return div;
+    };
 
     console.log("Legend: ", legend);   // DEBUG
     legend.addTo(myMap);
+
 
 }
 
@@ -134,8 +165,10 @@ function createMarkers(response) {
     console.log("Earthquake Depth [min/max]: ", Math.min(...depthArr), Math.max(...depthArr));   // DEBUG
     // console.log("Done!");   // DEBUG
 
-}
+};
 
+
+// UNITED STATES GEOLOGICAL SURVEY DATA 
 // USGS GeoJSON Feed: "All Earthquakes" - Past 7 Days (updated every minute)
 var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
 

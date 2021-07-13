@@ -18,7 +18,7 @@ function createMap(earthquakes) {
         id: "light-v10",
         accessToken: API_KEY
     });
-
+    
     // Tile layers holder (baseMaps object)
     var baseMaps = {
         "Light Map": lightmap
@@ -63,8 +63,8 @@ function createMarkers(response) {
 
     // Get earthquake data
     earthquakes.forEach((earthquake) => {
-        var place = earthquake.properties.place;
         var magnitude = earthquake.properties.mag;
+        var place = earthquake.properties.place;
         var location = [earthquake.geometry.coordinates[1], earthquake.geometry.coordinates[0]];
         var depth = earthquake.geometry.coordinates[2];
 
@@ -74,14 +74,16 @@ function createMarkers(response) {
         // console.log("Depth: ", depth);   // DEBUG
 
         // Build earthquake marker
-        var earthquakeMarker = L.circle(location, {
-            radius: magnitude * 30000,
+        var earthquakeMarker = L.circleMarker(location, {
+            radius: magnitude * 3,
+        // var earthquakeMarker = L.circle(location, {
+            // radius: magnitude * 2* 10000,
             stroke: true,
             color: "black",
             weight: 1,
             fillColor: "yellow",
             fillOpacity: 0.5
-        });
+        }).bindPopup(`<strong>Magnitude: ${magnitude}</strong><hr>Location: ${place}<br>Depth: ${depth} km`);
 
         earthquakeMarkers.push(earthquakeMarker);
         
@@ -100,12 +102,11 @@ function createMarkers(response) {
 
 }
 
+// USGS GeoJSON Feed: "All Earthquakes" - Past 7 Days (updated every minute)
+var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
 
 // USGS GeoJSON Feed: "M4.5+ Earthquakes" - Past 30 Days (updated every minute)
-var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson";
-
-// USGS GeoJSON Feed: "All Earthquakes" - Past 7 Days (updated every minute)
-// var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+// var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson";
 
 // Perform API call
 d3.json(usgsURL).then(createMarkers);

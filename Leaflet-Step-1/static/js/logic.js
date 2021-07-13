@@ -64,6 +64,26 @@ function createMap(earthquakes) {
         "Dark": darkMap
     };
 
+
+    // ADDITIONAL LAYERS
+
+    // Tectonic plates
+    // var plates;
+    // var link = "static/data/plates.geojson";
+    // d3.json(link).then(function (platesData) {
+    //     // Creating a GeoJSON layer with the retrieved data
+    //     var boundaries = L.geoJson(platesData, {
+    //         "color": "blue",
+    //         "weight": 1,
+    //         "opacity": .75
+    //     });
+
+    // plates = L.layerGroup(boundaries);
+    // console.log("Plates: ", plates);
+
+    // });
+
+
     // Additional layers holder (overlayMaps object)
     var overlayMaps = {
         "Earthquakes": earthquakes,
@@ -106,6 +126,17 @@ function createMap(earthquakes) {
 
     console.log("Legend: ", legend);   // DEBUG
     legend.addTo(myMap);
+
+
+    var link = "static/data/plates.geojson";
+    d3.json(link).then(function (data) {
+        // Creating a GeoJSON layer with the retrieved data
+        var plates = L.geoJson(data, {
+            "color": "blue",
+            "weight": 3,
+            "opacity": 0.3
+        }).addTo(myMap);
+    });
 
 
 }
@@ -177,4 +208,29 @@ var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_wee
 
 // Perform API call
 d3.json(usgsURL).then(createMarkers);
+
+
+
+
+/*
+TECTONIC PLATES DATA:
+    *Credit: Hugo Ahlenius, Nordpil & Peter Bird
+    *Source: https://github.com/fraxen/tectonicplates
+*/
+
+// var link = "https://github.com/fraxen/tectonicplates/blob/master/GeoJSON/PB2002_plates.json";
+// var link = "https://github.com/fraxen/tectonicplates/blob/master/GeoJSON/PB2002_boundaries.json";
+var link = "static/data/plates.geojson";
+
+d3.json(link).then(function (data) {
+    // Creating a GeoJSON layer with the retrieved data
+    var plates = L.geoJson(data, {
+        "color": "blue",
+        "weight": 1,
+        "opacity": .75
+    });
+
+    console.log("Tectonic plates: ", data);   // DEBUG
+
+});
 

@@ -1,12 +1,23 @@
-// SET INITIAL VALUES
-// US continental boundaries (*Reference: https://stackoverflow.com/questions/28117281/show-only-united-states-when-using-leaflet-js-and-osm)
-// var maxBounds = [
-//     [5.499550, -167.276413], //Southwest
-//     [83.162102, -52.233040]  //Northeast
-// ];
+// ::::::::::::::::::::::::::::::
+// DATA SOURCES
+// ::::::::::::::::::::::::::::::
 
+// UNITED STATES GEOLOGICAL SURVEY DATA
+// * USGS GeoJSON Feed: "All Earthquakes"
+// * Past 7 Days (updated every minute)
+var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
 
-// CHOOSE COLOR FUNCTION (*Reference: https://leafletjs.com/examples/choropleth/)
+// TECTONIC PLATES DATA
+// * Credit: Hugo Ahlenius, Nordpil & Peter Bird
+// * Source: https://github.com/fraxen/tectonicplates
+var platesGeoJSON = "static/data/boundaries.geojson";
+
+// ::::::::::::::::::::::::::::::
+// FUNCTIONS
+// ::::::::::::::::::::::::::::::
+
+// CHOOSE COLOR FUNCTION
+// *Source: https://leafletjs.com/examples/choropleth/
 function getColor(d) {
     return d > 90 ? '#FF1100' :
         d > 70 ? '#FF4B00' :
@@ -17,13 +28,35 @@ function getColor(d) {
                             '#00FFFF';
 }
 
+// CREATE LEGEND FUNCTION 
+// *Reference: https://leafletjs.com/examples/choropleth/
+function createLegend(myMap) {
+
+    var legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function (map) {
+
+        var div = L.DomUtil.create('div', 'info legend'),
+            grades = [-10, 10, 30, 50, 70, 90], 
+            labels = [];            
+
+        // Loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < grades.length; i++) {
+            div.innerHTML +=
+                '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+        }
+        console.log(div);   // DEBUG
+        return div;
+    };
+
+    legend.addTo(myMap);
+
+}
 
 // CREATE MAP FUNCTION
 function createMap(earthquakes, plates) {
 
-    // console.log("Creating map");   // DEBUG
-
-    // TILE LAYERS (background mapS) 
+    // TILE LAYERS (background maps) 
     // Mapbox Satellite
     var satelliteMap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
         attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
@@ -64,7 +97,6 @@ function createMap(earthquakes, plates) {
         "Dark": darkMap
     };
 
-
     // ADDITIONAL LAYERS
     // Additional layers holder (overlayMaps object)
     var overlayMaps = {
@@ -72,58 +104,41 @@ function createMap(earthquakes, plates) {
         "Tectonic Plates": plates
     }
 
-    // Build map & Set parameters (map object)
+    // CREATE MAP (map object)
     var myMap = L.map("map", {
         center: [25, -15],
         zoom: 3,
         layers: [lightMap, plates, earthquakes]
     });
 
-    // Layer control
+    // LAYER CONTROL
     L.control.layers(baseMaps, overlayMaps, {
         collapsed: false
     }).addTo(myMap); // Add to map
 
-    // console.log("Done!");   // DEBUG
+    // LEGEND
+    createLegend(myMap);
 
-    // CREATE LEGEND FUNCTION (*Reference: https://leafletjs.com/examples/choropleth/)
-    // Pending: Improve code 
-    var legend = L.control({ position: 'bottomright' });
-
-    legend.onAdd = function (map) {
-
-        var div = L.DomUtil.create('div', 'info legend'),
-            grades = [-10, 10, 30, 50, 70, 90],
-            labels = [];
-
-        // loop through our density intervals and generate a label with a colored square for each interval
-        for (var i = 0; i < grades.length; i++) {
-            div.innerHTML +=
-                '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-                grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-        }
-
-        return div;
-    };
-
-    console.log("Legend: ", legend);   // DEBUG
-    
-    legend.addTo(myMap);
-
-    console.log("End of Script")
+    console.log("End of Script")   // DEBUG
 
 }
 
 
-// CREATE MARKERS FUNCTION
+// CREATE MARKERS FUNCTION (Earthquakes layer)
+// Pending: change to onEachFeature
 function createMarkers(response) {
 
-    // console.log("Creating markers");   // DEBUG
+    // Get features from geoJSON response
+    var features = response.features;
 
-    // Get Features from geoJSON response
-    var earthquakes = response.features;
+    // Prompt earthquake count
     console.log("Earthquake Count: ", response.metadata.count);   // DEBUG
-    // console.log("Response: ", earthquakes);   // DEBUG
+    
+
+    // Pending: Timestamp
+    console.log(features);   // DEBUG
+    console.log(Date(features[0].properties.time));   // DEBUG .toString();
+
 
     // Define markers array
     var earthquakeMarkers = [];
@@ -131,22 +146,15 @@ function createMarkers(response) {
     var depthArr = [];   // DEBUG
 
     // Get earthquake data
-    earthquakes.forEach((earthquake) => {
-        var magnitude = earthquake.properties.mag;
-        var place = earthquake.properties.place;
-        var location = [earthquake.geometry.coordinates[1], earthquake.geometry.coordinates[0]];
-        var depth = earthquake.geometry.coordinates[2];
-
-        // console.log("Place: ", place);   // DEBUG
-        // console.log("Magnitude: ", magnitude);   // DEBUG
-        // console.log("Location: ", location);   // DEBUG
-        // console.log("Depth: ", depth);   // DEBUG
+    features.forEach((feature) => {
+        var magnitude = feature.properties.mag;
+        var place = feature.properties.place;
+        var location = [feature.geometry.coordinates[1], feature.geometry.coordinates[0]];
+        var depth = feature.geometry.coordinates[2];
 
         // Build earthquake marker
         var earthquakeMarker = L.circleMarker(location, {
             radius: magnitude * 3,
-            // var earthquakeMarker = L.circle(location, {
-            // radius: magnitude * 2* 10000,
             stroke: true,
             color: "black",
             weight: 1,
@@ -154,58 +162,43 @@ function createMarkers(response) {
             fillOpacity: 0.75
         }).bindPopup(`<strong>Magnitude: ${magnitude}</strong><hr>Location: ${place}<br>Depth: ${depth} km`);
 
+        // Append to arrays
         earthquakeMarkers.push(earthquakeMarker);
-
-        // console.log("Marker: ", earthquakeMarker);   // DEBUG
         magnitudeArr.push(magnitude);   // DEBUG
         depthArr.push(depth);   // DEBUG
 
     })
 
-    
+    var earthquakes = L.layerGroup(earthquakeMarkers);
+    createPlates(earthquakes);
 
-    var link = "static/data/boundaries.geojson";
-    d3.json(link).then(function (data) {
+    // Prompt earthquake summary
+    console.log("Earthquake Magnitude [min/max]: ", Math.min(...magnitudeArr), Math.max(...magnitudeArr));   // DEBUG
+    console.log("Earthquake Depth [min/max]: ", Math.min(...depthArr), Math.max(...depthArr));   // DEBUG
+
+}
+
+
+// CREATES PLATES FUNCTION (Plates layer)
+function createPlates(earthquakes) {
+
+    d3.json(platesGeoJSON).then(function (boundaries) {
         // Creating a GeoJSON layer with the retrieved data
-        var plates = L.geoJson(data, {
+        var plates = L.geoJson(boundaries, {
             "color": "blue",
             "weight": 1,
             "opacity": .75
         });
-    
-        console.log("Tectonic plates: ", data);   // DEBUG
-    
-        createMap(L.layerGroup(earthquakeMarkers), plates);
+
+        createMap(earthquakes, plates);
 
     });
-    
-    // console.log("Markers: ", earthquakeMarkers);   // DEBUG
-    console.log("Earthquake Magnitude [min/max]: ", Math.min(...magnitudeArr), Math.max(...magnitudeArr));   // DEBUG
-    console.log("Earthquake Depth [min/max]: ", Math.min(...depthArr), Math.max(...depthArr));   // DEBUG
-    // console.log("Done!");   // DEBUG
-
-};
+}
 
 
-// UNITED STATES GEOLOGICAL SURVEY DATA 
-// USGS GeoJSON Feed: "All Earthquakes" - Past 7 Days (updated every minute)
-var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+// ::::::::::::::::::::::::::::::
+// SCRIPT
+// ::::::::::::::::::::::::::::::
 
-// USGS GeoJSON Feed: "M4.5+ Earthquakes" - Past 30 Days (updated every minute)
-// var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson";
-
-// Perform API call
+// Perform initial API call
 d3.json(usgsURL).then(createMarkers);
-
-
-
-
-/*
-TECTONIC PLATES DATA:
-    *Credit: Hugo Ahlenius, Nordpil & Peter Bird
-    *Source: https://github.com/fraxen/tectonicplates
-*/
-
-// var link = "https://github.com/fraxen/tectonicplates/blob/master/GeoJSON/PB2002_plates.json";
-// var link = "https://github.com/fraxen/tectonicplates/blob/master/GeoJSON/PB2002_boundaries.json";
-

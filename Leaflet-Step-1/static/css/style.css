@@ -3,17 +3,21 @@ body {
   margin: 0;
 }
 
-#map,
+#map-id,
 body,
 html {
   height: 100%;
 }
 
+/* CSS Reference: Leaflet-Choropleth documentation */
 .legend {
+  padding: 6px 8px;
   line-height: 18px;
-  color: #555;
-  /* background: whitesmoke ; */
+  background: rgba(245, 245, 245, 0.75);   /* "whitesmoke" */ 
+  border-radius: 5px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 }
+
 .legend i {
   width: 18px;
   height: 18px;

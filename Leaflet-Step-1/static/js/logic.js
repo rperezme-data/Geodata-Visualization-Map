@@ -45,13 +45,14 @@ function createLegend(myMap) {
                 '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
                 grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
         }
-        console.log(div);   // DEBUG
+        
         return div;
     };
 
     legend.addTo(myMap);
 
 }
+
 
 // CREATE MAP FUNCTION
 function createMap(earthquakes, plates) {
@@ -105,7 +106,7 @@ function createMap(earthquakes, plates) {
     }
 
     // CREATE MAP (map object)
-    var myMap = L.map("map", {
+    var myMap = L.map("map-id", {
         center: [25, -15],
         zoom: 3,
         layers: [lightMap, plates, earthquakes]
@@ -125,7 +126,6 @@ function createMap(earthquakes, plates) {
 
 
 // CREATE MARKERS FUNCTION (Earthquakes layer)
-// Pending: change to onEachFeature
 function createMarkers(response) {
 
     // Get features from geoJSON response
@@ -135,9 +135,9 @@ function createMarkers(response) {
     console.log("Earthquake Count: ", response.metadata.count);   // DEBUG
     
 
-    // Pending: Timestamp
-    console.log(features);   // DEBUG
-    console.log(Date(features[0].properties.time));   // DEBUG .toString();
+    // Pending: UTC Timestamp
+    // console.log("Features: ", features);   // DEBUG
+    console.log("UTC: ", Date(features[0].properties.time));   // DEBUG .toString();
 
 
     // Define markers array
@@ -146,6 +146,7 @@ function createMarkers(response) {
     var depthArr = [];   // DEBUG
 
     // Get earthquake data
+    // Pending: Change to onEachFeature
     features.forEach((feature) => {
         var magnitude = feature.properties.mag;
         var place = feature.properties.place;
@@ -154,7 +155,7 @@ function createMarkers(response) {
 
         // Build earthquake marker
         var earthquakeMarker = L.circleMarker(location, {
-            radius: magnitude * 3,
+            radius: magnitude * 3.5,
             stroke: true,
             color: "black",
             weight: 1,
@@ -185,7 +186,7 @@ function createPlates(earthquakes) {
     d3.json(platesGeoJSON).then(function (boundaries) {
         // Creating a GeoJSON layer with the retrieved data
         var plates = L.geoJson(boundaries, {
-            "color": "blue",
+            "color": '#0000FF',   // "blue"
             "weight": 1,
             "opacity": .75
         });

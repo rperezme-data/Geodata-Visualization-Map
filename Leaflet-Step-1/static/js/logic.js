@@ -19,7 +19,7 @@ function getColor(d) {
 
 
 // CREATE MAP FUNCTION
-function createMap(earthquakes) {
+function createMap(earthquakes, plates) {
 
     // console.log("Creating map");   // DEBUG
 
@@ -66,35 +66,17 @@ function createMap(earthquakes) {
 
 
     // ADDITIONAL LAYERS
-
-    // Tectonic plates
-    // var plates;
-    // var link = "static/data/plates.geojson";
-    // d3.json(link).then(function (platesData) {
-    //     // Creating a GeoJSON layer with the retrieved data
-    //     var boundaries = L.geoJson(platesData, {
-    //         "color": "blue",
-    //         "weight": 1,
-    //         "opacity": .75
-    //     });
-
-    // plates = L.layerGroup(boundaries);
-    // console.log("Plates: ", plates);
-
-    // });
-
-
     // Additional layers holder (overlayMaps object)
     var overlayMaps = {
         "Earthquakes": earthquakes,
-        // "Tectonic Plates": plates
+        "Tectonic Plates": plates
     }
 
     // Build map & Set parameters (map object)
     var myMap = L.map("map", {
         center: [25, -15],
         zoom: 3,
-        layers: [lightMap, earthquakes]
+        layers: [lightMap, plates, earthquakes]
     });
 
     // Layer control
@@ -125,19 +107,10 @@ function createMap(earthquakes) {
     };
 
     console.log("Legend: ", legend);   // DEBUG
+    
     legend.addTo(myMap);
 
-
-    var link = "static/data/plates.geojson";
-    d3.json(link).then(function (data) {
-        // Creating a GeoJSON layer with the retrieved data
-        var plates = L.geoJson(data, {
-            "color": "blue",
-            "weight": 3,
-            "opacity": 0.3
-        }).addTo(myMap);
-    });
-
+    console.log("End of Script")
 
 }
 
@@ -189,8 +162,23 @@ function createMarkers(response) {
 
     })
 
-    createMap(L.layerGroup(earthquakeMarkers));
+    
 
+    var link = "static/data/boundaries.geojson";
+    d3.json(link).then(function (data) {
+        // Creating a GeoJSON layer with the retrieved data
+        var plates = L.geoJson(data, {
+            "color": "blue",
+            "weight": 1,
+            "opacity": .75
+        });
+    
+        console.log("Tectonic plates: ", data);   // DEBUG
+    
+        createMap(L.layerGroup(earthquakeMarkers), plates);
+
+    });
+    
     // console.log("Markers: ", earthquakeMarkers);   // DEBUG
     console.log("Earthquake Magnitude [min/max]: ", Math.min(...magnitudeArr), Math.max(...magnitudeArr));   // DEBUG
     console.log("Earthquake Depth [min/max]: ", Math.min(...depthArr), Math.max(...depthArr));   // DEBUG
@@ -220,17 +208,4 @@ TECTONIC PLATES DATA:
 
 // var link = "https://github.com/fraxen/tectonicplates/blob/master/GeoJSON/PB2002_plates.json";
 // var link = "https://github.com/fraxen/tectonicplates/blob/master/GeoJSON/PB2002_boundaries.json";
-var link = "static/data/plates.geojson";
-
-d3.json(link).then(function (data) {
-    // Creating a GeoJSON layer with the retrieved data
-    var plates = L.geoJson(data, {
-        "color": "blue",
-        "weight": 1,
-        "opacity": .75
-    });
-
-    console.log("Tectonic plates: ", data);   // DEBUG
-
-});
 

@@ -121,9 +121,9 @@ function createMap(earthquakes, plates) {
 
     // CREATE MAP (map object)
     var myMap = L.map("map-id", {
-        center: [21, -100],
+        center: [21, -100], // [21, -15]
         zoom: 3,
-        layers: [lightMap, plates, earthquakes]
+        layers: [satelliteMap, plates, earthquakes]
     });
 
     // LAYER CONTROL

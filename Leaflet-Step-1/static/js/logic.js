@@ -45,7 +45,7 @@ function infoLegend(myMap) {
 
         return div;
     };
-    
+
     legend.addTo(myMap);
 
 }
@@ -68,13 +68,11 @@ function createMap(earthquakeMarkers) {
         accessToken: API_KEY
     }).addTo(myMap);
 
-// Markers
-earthquakeMarkers.addTo(myMap);
+    // Markers
+    earthquakeMarkers.addTo(myMap);
 
     // Legend
     infoLegend(myMap);
-
-    console.log("End of Script")   // DEBUG
 
 }
 
@@ -94,7 +92,6 @@ function createMarkers(response) {
     var depthArr = [];   // DEBUG
 
     // Get earthquake data
-    // Pending: Change to onEachFeature
     features.forEach((feature) => {
         var magnitude = feature.properties.mag;
         var place = feature.properties.place;

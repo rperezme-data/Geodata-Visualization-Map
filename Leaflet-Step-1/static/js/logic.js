@@ -28,6 +28,7 @@ function getColor(d) {
                             '#00FFFF';
 }
 
+
 // CREATE LEGEND FUNCTION 
 // *Reference: https://leafletjs.com/examples/choropleth/
 function createLegend(myMap) {
@@ -36,8 +37,8 @@ function createLegend(myMap) {
     legend.onAdd = function (map) {
 
         var div = L.DomUtil.create('div', 'info legend'),
-            grades = [-10, 10, 30, 50, 70, 90], 
-            labels = [];            
+            grades = [-10, 10, 30, 50, 70, 90],
+            labels = [];
 
         // Loop through our density intervals and generate a label with a colored square for each interval
         for (var i = 0; i < grades.length; i++) {
@@ -45,7 +46,7 @@ function createLegend(myMap) {
                 '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
                 grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
         }
-        
+
         return div;
     };
 
@@ -133,12 +134,6 @@ function createMarkers(response) {
 
     // Prompt earthquake count
     console.log("Earthquake Count: ", response.metadata.count);   // DEBUG
-    
-
-    // Pending: UTC Timestamp
-    // console.log("Features: ", features);   // DEBUG
-    console.log("UTC: ", Date(features[0].properties.time));   // DEBUG .toString();
-
 
     // Define markers array
     var earthquakeMarkers = [];
@@ -150,6 +145,7 @@ function createMarkers(response) {
     features.forEach((feature) => {
         var magnitude = feature.properties.mag;
         var place = feature.properties.place;
+        var timestamp = new Date(feature.properties.time).toUTCString();
         var location = [feature.geometry.coordinates[1], feature.geometry.coordinates[0]];
         var depth = feature.geometry.coordinates[2];
 
@@ -161,7 +157,12 @@ function createMarkers(response) {
             weight: 1,
             fillColor: getColor(depth),
             fillOpacity: 0.75
-        }).bindPopup(`<strong>Magnitude: ${magnitude}</strong><hr>Location: ${place}<br>Depth: ${depth} km`);
+        }).bindPopup(`
+            <strong>Magnitude: ${magnitude}</strong><hr>
+            <strong>&#x2022 Location: </strong>${place}<br>
+            <strong>&#x2022 UTC: </strong>${timestamp}<br>
+            <strong>&#x2022 Depth: </strong>${depth} km
+        `);
 
         // Append to arrays
         earthquakeMarkers.push(earthquakeMarker);

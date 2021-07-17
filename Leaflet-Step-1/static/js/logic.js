@@ -7,10 +7,6 @@
 // * Past 7 Days (updated every minute)
 var usgsURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
 
-// TECTONIC PLATES DATA
-// * Credit: Hugo Ahlenius, Nordpil & Peter Bird
-// * Source: https://github.com/fraxen/tectonicplates
-var platesGeoJSON = "static/data/boundaries.geojson";
 
 // ::::::::::::::::::::::::::::::
 // FUNCTIONS
@@ -49,43 +45,19 @@ function infoLegend(myMap) {
 
         return div;
     };
-
+    
     legend.addTo(myMap);
 
-}
-
-// CONTACT LEGEND FUNCTION
-function contactLegend(myMap) {
-    var legend = L.control({ position: 'bottomleft' });
-    legend.onAdd = function (map) {
-        var div = L.DomUtil.create('div', 'contact');
-        div.innerHTML =
-            '<div><strong>Data Source: <a href=' + usgsURL + '>USGS</a><br>' +
-            'Contact: <a href="mailto:rperezme.data@gmail.com">rperezme.data@gmail.com</a></strong></div>';
-        return div;
-    };
-    legend.addTo(myMap);
 }
 
 
 // CREATE MAP FUNCTION
-function createMap(earthquakes, plates) {
+function createMap(earthquakeMarkers) {
 
-    // TILE LAYERS (background maps) 
-    // Mapbox Satellite
-    var satelliteMap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-        attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-        maxZoom: 18,
-        id: "satellite-v9",
-        accessToken: API_KEY
-    });
-
-    // Mapbox Outdoors
-    var outdoorsMap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-        attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-        maxZoom: 18,
-        id: "outdoors-v11",
-        accessToken: API_KEY
+    // Map Object
+    var myMap = L.map("map-id", {
+        center: [21, -100],
+        zoom: 3,
     });
 
     // Mapbox Light
@@ -94,46 +66,13 @@ function createMap(earthquakes, plates) {
         maxZoom: 18,
         id: "light-v10",
         accessToken: API_KEY
-    });
+    }).addTo(myMap);
 
-    // Mapbox Dark
-    var darkMap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-        attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-        maxZoom: 18,
-        id: "dark-v10",
-        accessToken: API_KEY
-    });
+// Markers
+earthquakeMarkers.addTo(myMap);
 
-    // Tile layers holder (baseMaps object)
-    var baseMaps = {
-        "Satellite": satelliteMap,
-        "Outdoor": outdoorsMap,
-        "Light": lightMap,
-        "Dark": darkMap
-    };
-
-    // ADDITIONAL LAYERS
-    // Additional layers holder (overlayMaps object)
-    var overlayMaps = {
-        "Earthquakes": earthquakes,
-        "Tectonic Plates": plates
-    }
-
-    // CREATE MAP (map object)
-    var myMap = L.map("map-id", {
-        center: [21, -100],
-        zoom: 3,
-        layers: [lightMap, plates, earthquakes]
-    });
-
-    // LAYER CONTROL
-    L.control.layers(baseMaps, overlayMaps, {
-        collapsed: false
-    }).addTo(myMap); // Add to map
-
-    // LEGENDS
+    // Legend
     infoLegend(myMap);
-    contactLegend(myMap);
 
     console.log("End of Script")   // DEBUG
 
@@ -186,29 +125,12 @@ function createMarkers(response) {
     })
 
     var earthquakes = L.layerGroup(earthquakeMarkers);
-    createPlates(earthquakes);
+    createMap(earthquakes);
 
     // Prompt earthquake summary
     console.log("Earthquake Magnitude [min/max]: ", Math.min(...magnitudeArr), Math.max(...magnitudeArr));   // DEBUG
     console.log("Earthquake Depth [min/max]: ", Math.min(...depthArr), Math.max(...depthArr));   // DEBUG
 
-}
-
-
-// CREATES PLATES FUNCTION (Plates layer)
-function createPlates(earthquakes) {
-
-    d3.json(platesGeoJSON).then(function (boundaries) {
-        // Creating a GeoJSON layer with the retrieved data
-        var plates = L.geoJson(boundaries, {
-            "color": '#0000FF',   // "blue"
-            "weight": 1,
-            "opacity": .75
-        });
-
-        createMap(earthquakes, plates);
-
-    });
 }
 
 

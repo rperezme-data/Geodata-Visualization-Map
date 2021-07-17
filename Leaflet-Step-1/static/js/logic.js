@@ -29,9 +29,9 @@ function getColor(d) {
 }
 
 
-// CREATE LEGEND FUNCTION 
+// INFO LEGEND FUNCTION
 // *Reference: https://leafletjs.com/examples/choropleth/
-function createLegend(myMap) {
+function infoLegend(myMap) {
 
     var legend = L.control({ position: 'bottomright' });
     legend.onAdd = function (map) {
@@ -40,7 +40,7 @@ function createLegend(myMap) {
             grades = [-10, 10, 30, 50, 70, 90],
             labels = [];
 
-        // Loop through our density intervals and generate a label with a colored square for each interval
+        // Loop through density intervals and generate label with colored square for each interval
         for (var i = 0; i < grades.length; i++) {
             div.innerHTML +=
                 '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
@@ -52,6 +52,17 @@ function createLegend(myMap) {
 
     legend.addTo(myMap);
 
+}
+
+// CONTACT LEGEND FUNCTION
+function contactLegend(myMap) {
+    var legend = L.control({ position: 'bottomleft' });
+    legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'contact');
+        div.innerHTML += '<div><strong>Data Source: <a href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php">USGS</a><br>Contact: <a href="mailto:rperezme.data@gmail.com">rperezme.data@gmail.com</a></strong></div>';
+        return div;
+    };
+    legend.addTo(myMap);
 }
 
 
@@ -108,7 +119,7 @@ function createMap(earthquakes, plates) {
 
     // CREATE MAP (map object)
     var myMap = L.map("map-id", {
-        center: [25, -15],
+        center: [21, -100],
         zoom: 3,
         layers: [lightMap, plates, earthquakes]
     });
@@ -118,8 +129,9 @@ function createMap(earthquakes, plates) {
         collapsed: false
     }).addTo(myMap); // Add to map
 
-    // LEGEND
-    createLegend(myMap);
+    // LEGENDS
+    infoLegend(myMap);
+    contactLegend(myMap);
 
     console.log("End of Script")   // DEBUG
 

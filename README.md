@@ -1,4 +1,3 @@
-# H17_Leaflet-challenge
 ## Web App: Earthquake Data Visualization Map
 
 ### Description

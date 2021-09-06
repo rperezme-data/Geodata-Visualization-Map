@@ -17,7 +17,7 @@ This web application was built using HTML & CSS for the webpage elements, JavaSc
 ### Screenshot
 ![Screenshot](Screenshots/Satellite.png)
 
-### [Explore the Eartquake Map!](https://rperezme-data.github.io/H17_Leaflet-challenge/Leaflet-Step-2/)
+### [Explore the Eartquake Map!](https://rperezme-data.github.io/Interactive-Visualization-Map/Leaflet-Step-2/)
 <br>
 
 --- 
